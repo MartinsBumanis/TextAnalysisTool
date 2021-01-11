@@ -175,6 +175,12 @@ namespace Project2
             return queryOrResult;
         }
 
+        /// <summary>
+        /// Formulas for TF-IDF
+        /// </summary>
+        /// <param name="term"></param>
+        /// <param name="docTitle"></param>
+        /// <returns></returns>
         static double TFIDFscore(string term, string docTitle)
         {
             double tf_score;
@@ -203,6 +209,12 @@ namespace Project2
             return tfidf_result;
         }
 
+        /// <summary>
+        /// Get TF-IDF score
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="docTitle"></param>
+        /// <returns></returns>
         static double GetDocScore(List<string> query, string docTitle)
         {
             double score = 0;
@@ -236,6 +248,8 @@ namespace Project2
 
             foreach (List<string> query in termsList)
             {
+
+                //Results get
                 List<string> postingsGet = GetPostings(query);
                 postingsGet.Sort();
 
@@ -245,6 +259,8 @@ namespace Project2
                 List<string> postingsOr = QueryOr(query);
                 postingsOr.Sort();
 
+
+                //TF-IDF uzdevums queryand
                 List<KeyValuePair<string, double>> notSortedAnd = new List<KeyValuePair<string, double>>();
                 foreach (string doc in QueryAnd(query))
                 {
@@ -253,10 +269,11 @@ namespace Project2
                 }
                 List<KeyValuePair<string, double>> sortedAnd = notSortedAnd.OrderByDescending(x => x.Value).ToList();
 
-                List<KeyValuePair<string, double>> notSortedOr = new List<KeyValuePair<string, double>>();
+                //TF-IDF uzdevums queryor
+                List<KeyValuePair<string, double>> notSortedOr = new List<KeyValuePair<string, double>>(); //tukšs lists
                 foreach (string doc in QueryOr(query))
                 {
-                    double docScore = GetDocScore(query, doc);
+                    double docScore = GetDocScore(query, doc); //tf-idf for katram dokumentam
                     notSortedOr.Add(new KeyValuePair<string, double>(doc, docScore));
                 }
                 List<KeyValuePair<string, double>> sortedOr = notSortedOr.OrderByDescending(x => x.Value).ToList();
@@ -280,7 +297,7 @@ namespace Project2
         static void GetFilePaths()
         {
             // Dokumenta fails
-            // D:\Barba\Desktop\Project2files\sample.txt
+          
             Console.WriteLine("Ievadiet faila path, kas satur dokumentu id un teikumus: ");
             //firstFilePath = Console.ReadLine();
             while (!File.Exists(firstFilePath))
@@ -290,7 +307,7 @@ namespace Project2
             }
 
             // Vaicajumu fails
-            // D:\Barba\Desktop\Project2files\regularpimerei.txt
+           
             Console.WriteLine("Ievadiet faila path, kas satur vaicajumus: ");
            // queryFilePath = Console.ReadLine();
             while (!File.Exists(queryFilePath))
@@ -309,7 +326,7 @@ namespace Project2
             }
 
             // Rezultata fails
-            // D:\Barba\Desktop\Project2files\rezultati.txt
+       
             Console.WriteLine("Ievadiet faila path, kur izvadit rezultatus: ");
             //resultFilePath = Console.ReadLine();
 
