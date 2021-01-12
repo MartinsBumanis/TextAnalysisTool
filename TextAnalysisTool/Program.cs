@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Collections;
 
 namespace Project2
 {
@@ -21,11 +22,81 @@ namespace Project2
 
         static List<string> GetBigramIndex(Dictionary<string, List<string>> termsMap, List<string> replacedTermsList)
         {
-            
+         
+
             List<string> postings = new List<string>();
             List<string> spliced = new List<string>();
+           
+            //ArrayList grams = new ArrayList();
             foreach (string term in replacedTermsList)
             {
+
+                //https://www.codeproject.com/Articles/12098/Term-frequency-Inverse-document-frequency-implemen
+                int gramLength = 2;
+                List<string> grams = new List<string>();
+                if (term == null || term.Length == 0)
+                    return null;
+
+                
+                int length = term.Length;
+                if (length < gramLength)
+                {
+                    string gram;
+                    for (int i = 1; i <= length; i++)
+                    {
+                        gram = term.Substring(0, (i) - (0));
+                        if (grams.IndexOf(gram) == -1)
+                            grams.Add(gram);
+                    }
+
+                    gram = term.Substring(length - 1, (length) - (length - 1));
+                    if (grams.IndexOf(gram) == -1)
+                        grams.Add(gram);
+
+                }
+                else
+                {
+                    for (int i = 1; i <= gramLength - 1; i++)
+                    {
+                        string gram = term.Substring(0, (i) - (0));
+                        if (gram.Contains("*"))
+                        {
+
+                            gram = gram.Replace("*", "");
+                        };
+                        int gramStringLength = gram.Length;
+                        if (gramStringLength != 0 && grams.IndexOf(gram) == -1)
+                            grams.Add(gram);
+
+                    }
+
+                    for (int i = 0; i < (length - gramLength) + 1; i++)
+                    {
+                        string gram = term.Substring(i, (i + gramLength) - (i));
+                        if (gram.Contains("*")){
+
+                            gram = gram.Replace("*", "");
+                        };
+                        int gramStringLength = gram.Length;
+                        if (gramStringLength != 0 && grams.IndexOf(gram) == -1)
+                            grams.Add(gram);
+                    }
+
+                    for (int i = (length - gramLength) + 1; i < length; i++)
+                    {
+                        string gram = term.Substring(i, (length) - (i));
+                        if (gram.Contains("*"))
+                        {
+
+                            gram = gram.Replace("*", "");
+                        };
+                        int gramStringLength = gram.Length;
+                        if (gramStringLength != 0 && grams.IndexOf(gram) == -1)
+                            grams.Add(gram);
+                    }
+                }
+              
+                /*
                 int chunkSize = 2;
                 int stringLength = term.Length;
                 for (int i = 0; i < stringLength; i += chunkSize)
@@ -35,6 +106,8 @@ namespace Project2
                     spliced.Add(term.Substring(i, chunkSize));
 
                 }
+
+                */
 
                 if (termsMap.TryGetValue(term, out List<string> matches))
                 {
