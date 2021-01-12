@@ -5,23 +5,105 @@ using System.Text;
 using System.IO;
 using System.Collections;
 
-namespace Project2
+namespace TextAnalysisTool
 {
 
+    //Mārtiņš Būmanis 151RDB442
     public class Program
     {
         static Dictionary<string, List<string>> termsMap = new Dictionary<string, List<string>>();
         static List<List<string>> termsList = new List<List<string>>();
         static List<string> replacedTermsList = new List<string>();
-        static string firstFilePath = @"C:\Users\Martins\source\repos\TextAnalysisTool\sample.txt";
-        static string queryFilePath = @"C:\Users\Martins\source\repos\TextAnalysisTool\regulquery2.txt";
-        static string queryListFilePath = @"C:\Users\Martins\source\repos\TextAnalysisTool\aizquery.txt";
-        static string resultFilePath = @"C:\Users\Martins\source\repos\TextAnalysisTool\results.txt";
+        static string firstFilePath;
+        static string queryFilePath;
+        static string queryListFilePath;
+        static string resultFilePath;
+
+        //static string firstFilePath = @"C:\Users\Martins\source\repos\TextAnalysisTool\sample.txt";
+        //static string queryFilePath = @"C:\Users\Martins\source\repos\TextAnalysisTool\regulquery2.txt";
+        ///static string queryListFilePath = @"C:\Users\Martins\source\repos\TextAnalysisTool\aizquery.txt";
+        //static string resultFilePath = @"C:\Users\Martins\source\repos\TextAnalysisTool\results.txt";
 
 
-        /* Te ir bi-gram, viņš sadala tā kā vajag, pa diviem burtiem, pirmo un pedejo pa 1, bet neko nemeklē vēl
-   Sanāk, ka tālāk vnk jāmeklē pret tiem sadalītājiem lkm
-   Pašreiz viņam nav opcija, ka nogriež, ka pirms un pēc pēdējiem burtiem nekā nav*/
+        /// <summary>
+        /// Main method
+        /// </summary>
+        public static void Main()
+        {
+            // lai mazaak vietu aiznem mainaa, ieliku atseviski visu failu nosaukumu vadisanu
+            // https://www.dotnetperls.com/inverted-index
+            GetFilePaths();
+
+            //Datu lasīšana no failiem
+            FillDictionaryFromFile(); //vardina no sample
+            FillTermsListFromFile(); //regularie vaicajumi
+            FillReplaceTermsListFromFile(); //aizstajej vaicajumi
+
+            foreach (List<string> query in termsList) //query ir iedotie query, kas var saturēt vairākus terminus, viens cikls vienam query
+            {
+
+                //Get postings, 1. uzdevums
+                List<string> postingsGet = GetPostings(query);
+                postingsGet.Sort();
+
+                //Getquery and or 2.uzd
+                List<string> postingsAnd = QueryAnd(query);
+                postingsAnd.Sort();
+
+                List<string> postingsOr = QueryOr(query);
+                postingsOr.Sort();
+
+
+                //TF-IDF uzdevums queryand
+                List<KeyValuePair<string, double>> notSortedAnd = new List<KeyValuePair<string, double>>();
+                foreach (string doc in QueryAnd(query))
+                {
+                    double docScore = GetDocScore(query, doc);
+                    notSortedAnd.Add(new KeyValuePair<string, double>(doc, docScore));
+                }
+                List<KeyValuePair<string, double>> sortedAnd = notSortedAnd.OrderByDescending(x => x.Value).ToList();
+
+                //TF-IDF uzdevums queryor
+                List<KeyValuePair<string, double>> notSortedOr = new List<KeyValuePair<string, double>>(); //tukšs lists
+                foreach (string doc in QueryOr(query))
+                {
+                    double docScore = GetDocScore(query, doc); //tf-idf for katram dokumentam
+                    notSortedOr.Add(new KeyValuePair<string, double>(doc, docScore));
+                }
+                List<KeyValuePair<string, double>> sortedOr = notSortedOr.OrderByDescending(x => x.Value).ToList();
+
+
+                // ieraksta failaa
+                using (TextWriter tw = File.AppendText(resultFilePath))
+                {
+                    WritePostings(tw, query, postingsGet);
+                    WriteAnd(tw, query, postingsAnd);
+                    WriteTFIDF(tw, query, sortedAnd);
+                    WriteOr(tw, query, postingsOr);
+                    WriteTFIDF(tw, query, sortedOr);
+                }
+            }
+            // int myint = 1;
+            foreach (string term in replacedTermsList)
+            {
+
+
+                List<KeyValuePair<string, List<string>>> bigramPostings = GetBigramIndex(term);
+
+                using (TextWriter tw = File.AppendText(resultFilePath))
+                {
+                    WriteBigram(tw, term, bigramPostings);
+
+                };
+
+
+                //myint += 1;
+
+
+            }
+        }
+
+        /* Te ir bi-gram, viņš sadala tā kā vajag, pa diviem burtiem*/
         static List<KeyValuePair<string, List<string>>> GetBigramIndex(string term)
         {
 
@@ -204,83 +286,7 @@ namespace Project2
 
 
 
-        /// <summary>
-        /// Main method
-        /// </summary>
-        public static void Main()
-        {
-            // lai mazaak vietu aiznem mainaa, ieliku atseviski visu failu nosaukumu vadisanu
-            // https://www.dotnetperls.com/inverted-index
-            GetFilePaths();
-
-            //Datu lasīšana no failiem
-            FillDictionaryFromFile(); //vardina no sample
-            FillTermsListFromFile(); //regularie vaicajumi
-            FillReplaceTermsListFromFile(); //aizstajej vaicajumi
-
-            foreach (List<string> query in termsList) //query ir iedotie query, kas var saturēt vairākus terminus, viens cikls vienam query
-            {
-
-                //Get postings, 1. uzdevums
-                List<string> postingsGet = GetPostings(query);
-                postingsGet.Sort();
-
-                //Getquery and or 2.uzd
-                List<string> postingsAnd = QueryAnd(query);
-                postingsAnd.Sort();
-
-                List<string> postingsOr = QueryOr(query);
-                postingsOr.Sort();
-
-
-                //TF-IDF uzdevums queryand
-                List<KeyValuePair<string, double>> notSortedAnd = new List<KeyValuePair<string, double>>();
-                foreach (string doc in QueryAnd(query))
-                {
-                    double docScore = GetDocScore(query, doc);
-                    notSortedAnd.Add(new KeyValuePair<string, double>(doc, docScore));
-                }
-                List<KeyValuePair<string, double>> sortedAnd = notSortedAnd.OrderByDescending(x => x.Value).ToList();
-
-                //TF-IDF uzdevums queryor
-                List<KeyValuePair<string, double>> notSortedOr = new List<KeyValuePair<string, double>>(); //tukšs lists
-                foreach (string doc in QueryOr(query))
-                {
-                    double docScore = GetDocScore(query, doc); //tf-idf for katram dokumentam
-                    notSortedOr.Add(new KeyValuePair<string, double>(doc, docScore));
-                }
-                List<KeyValuePair<string, double>> sortedOr = notSortedOr.OrderByDescending(x => x.Value).ToList();
-
-
-                // ieraksta failaa
-                using (TextWriter tw = File.AppendText(resultFilePath))
-                {
-                    WritePostings(tw, query, postingsGet);
-                    WriteAnd(tw, query, postingsAnd);
-                    WriteTFIDF(tw, query, sortedAnd);
-                    WriteOr(tw, query, postingsOr);
-                    WriteTFIDF(tw, query, sortedOr);
-                }
-            }
-            // int myint = 1;
-            foreach (string term in replacedTermsList)
-            {
-
-
-                List<KeyValuePair<string, List<string>>> bigramPostings = GetBigramIndex(term);
-
-                using (TextWriter tw = File.AppendText(resultFilePath))
-                {
-                    WriteBigram(tw, term, bigramPostings);
-
-                };
-
-
-                //myint += 1;
-
-
-            }
-        }
+       
 
         /// <summary>
         /// Fills Dictionary termsMap with content from given file
@@ -405,11 +411,11 @@ namespace Project2
         /// <returns></returns>
         static List<string> QueryAnd(List<string> terms)
         {
-            List<List<string>> listOfPostings = new List<List<string>>();
+            List<List<string>> listOfPostings = new List<List<string>>(); //katram termam var but dazadi postingi tapec list listaa
 
             foreach (string term in terms)
             {
-                if (termsMap.TryGetValue(term, out List<string> matches))
+                if (termsMap.TryGetValue(term, out List<string> matches)) //katram termam mekle values, kas var but match matches ir doc nr
                 {
                     listOfPostings.Add(matches);
                 }
@@ -417,13 +423,13 @@ namespace Project2
 
             List<string> queryAndResult = new List<string>();
             // https://stackoverflow.com/questions/1674742/intersection-of-multiple-lists-with-ienumerable-intersect
-            if (listOfPostings.Any())
+            if (listOfPostings.Any()) //ja nav empty
             {
-                queryAndResult = listOfPostings
+                queryAndResult = listOfPostings //panem to kas ir visos(and) intersect 
                     .Skip(1)
                     .Aggregate(
                     new HashSet<string>(listOfPostings.First()),
-                    (h, e) => { h.IntersectWith(e); return h; }).ToList();
+                    (h, e) => { h.IntersectWith(e); return h; }).ToList(); //uztaisa jaunu list tikai tur kur visi ir
             }
             return queryAndResult;
         }
@@ -444,11 +450,11 @@ namespace Project2
             // https://stackoverflow.com/questions/1674742/intersection-of-multiple-lists-with-ienumerable-intersect tikai ar unionwith
             if (listOfPostings.Any())
             {
-                queryOrResult = listOfPostings
+                queryOrResult = listOfPostings //atrod ka jebkur ir unionwith
                 .Skip(1)
                 .Aggregate(
                 new HashSet<string>(listOfPostings.First()),
-                (h, e) => { h.UnionWith(e); return h; }).ToList();
+                (h, e) => { h.UnionWith(e); return h; }).ToList(); //savieno visus viena
             }
             return queryOrResult;
         }
@@ -465,33 +471,34 @@ namespace Project2
             double idf_score;
             double tfidf_result;
             List<string> words = new List<string>();
-            foreach (string line in File.ReadLines(firstFilePath))
+            foreach (string line in File.ReadLines(firstFilePath)) //lasam dokumentu pa liniju
             {
-                if (GetTitleFromPage(line).Equals(docTitle))
+                if (GetTitleFromPage(line).Equals(docTitle)) //mekle vai title ir linija ar doctitle ko vajag
                 {
-                    words = GetTermsFromPage(line).ToList();
+                    words = GetTermsFromPage(line).ToList(); //ja ir tad ieliek list
                     break;
                 }
             }
             int docCountContainsTerm;
-            int termCountInDoc = words.Where(x => x.Equals(term)).Count();
-            int totalTermCountInDoc = words.Count();
-            tf_score = (double)termCountInDoc / totalTermCountInDoc;
+            int termCountInDoc = words.Where(x => x.Equals(term)).Count(); //termina t skaits dokumenta
+            int totalTermCountInDoc = words.Count(); //kopejais termina skaits dokumenta
+            tf_score = (double)termCountInDoc / totalTermCountInDoc; //dota formula
 
             List<string> matches = new List<string>();
-            int totalDocCount = File.ReadLines(firstFilePath).Count();
+            int totalDocCount = File.ReadLines(firstFilePath).Count(); //kopejais dokumentu(liniju) skaits
 
 
-            if (termsMap.TryGetValue(term, out matches))
+            if (termsMap.TryGetValue(term, out matches)) //dokumentu skaits kas satur termninu t
             {
                 docCountContainsTerm = matches.Count();
             }
+            else
+            { 
+                docCountContainsTerm = 0; 
+            }
 
+            //formulas
 
-
-
-
-            else { docCountContainsTerm = 0; }
 
             idf_score = (double)totalDocCount / docCountContainsTerm;
 
@@ -538,38 +545,39 @@ namespace Project2
         static void GetFilePaths()
         {
             // Dokumenta fails
+            Console.WriteLine("Martins Bumanis 151RDB442");
+            Console.WriteLine("Ievadiet faila nosaukumu(piemeram sample.txt) kas satur dokumentu id un teikumus: ");
+            firstFilePath = Directory.GetCurrentDirectory() + @"\" + Console.ReadLine();
 
-            Console.WriteLine("Ievadiet faila path, kas satur dokumentu id un teikumus: ");
-            //firstFilePath = Console.ReadLine();
             while (!File.Exists(firstFilePath))
             {
                 Console.WriteLine("Fails neeksiste, ievadiet pareizu path: ");
-                firstFilePath = Console.ReadLine();
+                firstFilePath = Directory.GetCurrentDirectory() + @"\" + Console.ReadLine();
             }
 
             // Vaicajumu fails
 
-            Console.WriteLine("Ievadiet faila path, kas satur vaicajumus: ");
-            // queryFilePath = Console.ReadLine();
+            Console.WriteLine("Ievadiet faila nosaukumu(piemeram vaicajumi.txt), kas satur vaicajumus: ");
+            queryFilePath = Directory.GetCurrentDirectory() + @"\" + Console.ReadLine();
             while (!File.Exists(queryFilePath))
             {
                 Console.WriteLine("Fails neeksiste, ievadiet pareizu path: ");
-                queryFilePath = Console.ReadLine();
+                queryFilePath = Directory.GetCurrentDirectory() + @"\" + Console.ReadLine();
             }
 
             // Aizstajejvaicajumi
-            Console.WriteLine("Ievadiet faila path, kas satur aizstajejvaicajumus: ");
-            // queryListFilePath = Console.ReadLine();
+            Console.WriteLine("Ievadiet faila nosaukumu(piemeram wildcard.txt), kas satur aizstajejvaicajumus: ");
+            queryListFilePath = Directory.GetCurrentDirectory() + @"\" + Console.ReadLine();
             while (!File.Exists(queryListFilePath))
             {
                 Console.WriteLine("Fails neeksiste, ievadiet pareizu path: ");
-                queryListFilePath = Console.ReadLine();
+                queryListFilePath = Directory.GetCurrentDirectory() + @"\" + Console.ReadLine();
             }
 
             // Rezultata fails
 
-            Console.WriteLine("Ievadiet faila path, kur izvadit rezultatus: ");
-            //resultFilePath = Console.ReadLine();
+            Console.WriteLine("Ievadiet faila nosaukumu(results.txt), kur izvadit rezultatus: ");
+            resultFilePath = Directory.GetCurrentDirectory() + @"\" + Console.ReadLine();
 
 
         }
@@ -654,7 +662,7 @@ namespace Project2
 
             tw.Write($"{query}"); //given terms printed
 
-           
+
             if (postings.Any())
             {
                 foreach (string p in postings.Select(x => x.Key))
@@ -665,13 +673,13 @@ namespace Project2
                     tw.Write($"{p} ");
                     tw.Write("\nPostings: ");
 
-                    
-                    foreach (List<string> a in postings.Where(x => x.Key == p)
+
+                    foreach (List<string> a in postings.Where(x => x.Key == p) //tolist lai varētu izvadīt
                     .Select(x => x.Value))
                     {
-                        
-                        foreach(string finalPosting in a)
-                        tw.Write($"{finalPosting} ");
+
+                        foreach (string finalPosting in a)
+                            tw.Write($"{finalPosting} ");
                     }
 
                 }
