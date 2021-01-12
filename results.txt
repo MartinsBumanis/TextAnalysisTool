@@ -262,3 +262,179 @@ Results: 1003 1005 1009 1010 1013 1015 1017 1020 1021 1025 1033 1036 1039 1043 1
 TF-IDF
 he she 
 Results: 1057 1053 1049 1052 1050 1013 1048 1045 1036 1044 1009 1017 1039 1043 1055 1060 1025 1010 1020 1005 1054 1033 1015 1003 1021 
+
+GetPostings
+Bennet
+Results:1002 1016 1055
+husband
+Results:1007 1011 1012 1027 1038 1042 1058
+
+QueryAnd
+Bennet husband 
+Results: empty
+
+TF-IDF
+Bennet husband 
+Results: empty
+
+QueryOr
+Bennet husband 
+Results: 1002 1007 1011 1012 1016 1027 1038 1042 1055 1058 
+
+TF-IDF
+Bennet husband 
+Results: 1042 1058 1016 1002 1038 1055 1012 1007 1011 1027 
+
+GetPostings
+Lucas
+Results:1014
+
+QueryAnd
+Lucas 
+Results: 1014 
+
+TF-IDF
+Lucas 
+Results: 1014 
+
+QueryOr
+Lucas 
+Results: 1014 
+
+TF-IDF
+Lucas 
+Results: 1014 
+
+GetPostings
+room
+Results:1016 1019 1029 1049
+Darcy
+Results:1019 1024 1027 1035
+Hurst
+Results:1024
+
+QueryAnd
+room Darcy Hurst 
+Results: empty
+
+TF-IDF
+room Darcy Hurst 
+Results: empty
+
+QueryOr
+room Darcy Hurst 
+Results: 1016 1019 1024 1027 1029 1035 1049 
+
+TF-IDF
+room Darcy Hurst 
+Results: 1024 1035 1019 1016 1049 1029 1027 
+
+GetPostings
+he
+Results:1003 1005 1009 1010 1013 1015 1017 1020 1021 1025 1033 1043 1044 1049 1050 1052 1053 1054 1055 1060
+she
+Results:1013 1036 1039 1045 1048 1049 1052 1053 1057 1060
+
+QueryAnd
+he she 
+Results: 1013 1049 1052 1053 1060 
+
+TF-IDF
+he she 
+Results: 1053 1049 1052 1013 1060 
+
+QueryOr
+he she 
+Results: 1003 1005 1009 1010 1013 1015 1017 1020 1021 1025 1033 1036 1039 1043 1044 1045 1048 1049 1050 1052 1053 1054 1055 1057 1060 
+
+TF-IDF
+he she 
+Results: 1057 1053 1049 1052 1050 1013 1048 1045 1036 1044 1009 1017 1039 1043 1055 1060 1025 1010 1020 1005 1054 1033 1015 1003 1021 
+
+GetPostings
+Bennet
+Results:1002 1016 1055
+husband
+Results:1007 1011 1012 1027 1038 1042 1058
+
+QueryAnd
+Bennet husband 
+Results: empty
+
+TF-IDF
+Bennet husband 
+Results: empty
+
+QueryOr
+Bennet husband 
+Results: 1002 1007 1011 1012 1016 1027 1038 1042 1055 1058 
+
+TF-IDF
+Bennet husband 
+Results: 1042 1058 1016 1002 1038 1055 1012 1007 1011 1027 
+
+GetPostings
+Lucas
+Results:1014
+
+QueryAnd
+Lucas 
+Results: 1014 
+
+TF-IDF
+Lucas 
+Results: 1014 
+
+QueryOr
+Lucas 
+Results: 1014 
+
+TF-IDF
+Lucas 
+Results: 1014 
+
+GetPostings
+room
+Results:1016 1019 1029 1049
+Darcy
+Results:1019 1024 1027 1035
+Hurst
+Results:1024
+
+QueryAnd
+room Darcy Hurst 
+Results: empty
+
+TF-IDF
+room Darcy Hurst 
+Results: empty
+
+QueryOr
+room Darcy Hurst 
+Results: 1016 1019 1024 1027 1029 1035 1049 
+
+TF-IDF
+room Darcy Hurst 
+Results: 1024 1035 1019 1016 1049 1029 1027 
+
+GetPostings
+he
+Results:1003 1005 1009 1010 1013 1015 1017 1020 1021 1025 1033 1043 1044 1049 1050 1052 1053 1054 1055 1060
+she
+Results:1013 1036 1039 1045 1048 1049 1052 1053 1057 1060
+
+QueryAnd
+he she 
+Results: 1013 1049 1052 1053 1060 
+
+TF-IDF
+he she 
+Results: 1053 1049 1052 1013 1060 
+
+QueryOr
+he she 
+Results: 1003 1005 1009 1010 1013 1015 1017 1020 1021 1025 1033 1036 1039 1043 1044 1045 1048 1049 1050 1052 1053 1054 1055 1057 1060 
+
+TF-IDF
+he she 
+Results: 1057 1053 1049 1052 1050 1013 1048 1045 1036 1044 1009 1017 1039 1043 1055 1060 1025 1010 1020 1005 1054 1033 1015 1003 1021 

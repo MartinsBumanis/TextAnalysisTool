@@ -19,140 +19,97 @@ namespace Project2
         static string resultFilePath = @"C:\Users\Martins\source\repos\TextAnalysisTool\results.txt";
 
 
-
-        static List<string> GetBigramIndex(Dictionary<string, List<string>> termsMap, List<string> replacedTermsList)
+        /* Te ir bi-gram, viņš sadala tā kā vajag, pa diviem burtiem, pirmo un pedejo pa 1, bet neko nemeklē vēl
+   Sanāk, ka tālāk vnk jāmeklē pret tiem sadalītājiem lkm
+   Pašreiz viņam nav opcija, ka nogriež, ka pirms un pēc pēdējiem burtiem nekā nav*/
+        static List<KeyValuePair<string, List<string>>> GetBigramIndex(string term)
         {
-         
+
 
             List<string> postings = new List<string>();
             List<string> spliced = new List<string>();
-           
-            //ArrayList grams = new ArrayList();
-            foreach (string term in replacedTermsList)
+
+
+            //https://www.codeproject.com/Articles/12098/Term-frequency-Inverse-document-frequency-implemen
+            int gramLength = 2;
+            List<string> grams = new List<string>();
+
+            int length = term.Length;
+
+            for (int i = 1; i <= gramLength - 1; i++)
+            {
+                string gram = term.Substring(0, (i) - (0));
+                if (gram.Contains("*"))
+                {
+
+                    gram = gram.Replace("*", "");
+                };
+                int gramStringLength = gram.Length;
+                if (gramStringLength != 0 && grams.IndexOf(gram) == -1)
+                    grams.Add(gram);
+
+            }
+
+            for (int i = 0; i < (length - gramLength) + 1; i++)
+            {
+                string gram = term.Substring(i, (i + gramLength) - (i));
+                if (gram.Contains("*"))
+                {
+
+                    gram = gram.Replace("*", "");
+                };
+                int gramStringLength = gram.Length;
+                if (gramStringLength != 0 && grams.IndexOf(gram) == -1)
+                    grams.Add(gram);
+            }
+
+            for (int i = (length - gramLength) + 1; i < length; i++)
+            {
+                string gram = term.Substring(i, (length) - (i));
+                if (gram.Contains("*"))
+                {
+
+                    gram = gram.Replace("*", "");
+                };
+                int gramStringLength = gram.Length;
+                if (gramStringLength != 0 && grams.IndexOf(gram) == -1)
+                    grams.Add(gram);
+            }
+
+            List<string> bigramPostings = new List<string>();
+
+
+
+
+            List<List<string>> listOfPostings = new List<List<string>>();
+
+
+
+            List<KeyValuePair<string, List<string>>> keys = termsMap.Where(x => x.Key.Contains(grams[0])).ToList();
+
+
+
+            foreach (string gram in grams)
             {
 
-                //https://www.codeproject.com/Articles/12098/Term-frequency-Inverse-document-frequency-implemen
-                int gramLength = 2;
-                List<string> grams = new List<string>();
-                if (term == null || term.Length == 0)
-                    return null;
+                keys = keys.Where(x => x.Key.Contains(gram)).ToList();
 
-                
-                int length = term.Length;
-                if (length < gramLength)
+                keys = keys;
+                /*
+                if (termsMap.Where(x => x.Key.Contains(grams))
                 {
-                    string gram;
-                    for (int i = 1; i <= length; i++)
-                    {
-                        gram = term.Substring(0, (i) - (0));
-                        if (grams.IndexOf(gram) == -1)
-                            grams.Add(gram);
-                    }
-
-                    gram = term.Substring(length - 1, (length) - (length - 1));
-                    if (grams.IndexOf(gram) == -1)
-                        grams.Add(gram);
-
+                    listOfPostings.Add(matches);
                 }
-                else
-                {
-                    for (int i = 1; i <= gramLength - 1; i++)
-                    {
-                        string gram = term.Substring(0, (i) - (0));
-                        if (gram.Contains("*"))
-                        {
-
-                            gram = gram.Replace("*", "");
-                        };
-                        int gramStringLength = gram.Length;
-                        if (gramStringLength != 0 && grams.IndexOf(gram) == -1)
-                            grams.Add(gram);
-
-                    }
-
-                    for (int i = 0; i < (length - gramLength) + 1; i++)
-                    {
-                        string gram = term.Substring(i, (i + gramLength) - (i));
-                        if (gram.Contains("*")){
-
-                            gram = gram.Replace("*", "");
-                        };
-                        int gramStringLength = gram.Length;
-                        if (gramStringLength != 0 && grams.IndexOf(gram) == -1)
-                            grams.Add(gram);
-                    }
-
-                    for (int i = (length - gramLength) + 1; i < length; i++)
-                    {
-                        string gram = term.Substring(i, (length) - (i));
-                        if (gram.Contains("*"))
-                        {
-
-                            gram = gram.Replace("*", "");
-                        };
-                        int gramStringLength = gram.Length;
-                        if (gramStringLength != 0 && grams.IndexOf(gram) == -1)
-                            grams.Add(gram);
-                    }
-
-                    List<string> bigramPostings = new List<string>();
-
-                 
-                    
-
-                    List<List<string>> listOfPostings = new List<List<string>>();
-
-
-
-                    var keys = termsMap.Where(x => x.Key.Contains(grams[0])).ToList();
-                   
-
-
-                    foreach (string gram in grams)
-                    {
-
-                        keys = keys.Where(x => x.Key.Contains(gram)).ToList();
-                        
-                        keys = keys;
-                        /*
-                        if (termsMap.Where(x => x.Key.Contains(grams))
-                        {
-                            listOfPostings.Add(matches);
-                        }
-                        */
-                    }
-                   
-                     
-
-
-                }
-                
-
+                */
             }
 
-            /*
-            int chunkSize = 2;
-            int stringLength = term.Length;
-            for (int i = 0; i < stringLength; i += chunkSize)
-            {
-                if (i + chunkSize > stringLength) chunkSize = stringLength - i;
-                //Console.WriteLine(term.Substring(i, chunkSize));
-                spliced.Add(term.Substring(i, chunkSize));
 
-            }
-
-            */
-            /*
-            if (termsMap.TryGetValue(term, out List<string> matches))
-                {
-                    postings.Add(string.Join(" ", matches));
-                }
-            }
-            */
-            return postings;
-            
-        }
+            return keys;
         
+           
+        }
+
+
 
         /// <summary>
         /// Main method
@@ -162,7 +119,7 @@ namespace Project2
             // lai mazaak vietu aiznem mainaa, ieliku atseviski visu failu nosaukumu vadisanu
             // https://www.dotnetperls.com/inverted-index
             GetFilePaths();
-            
+
             //Datu lasīšana no failiem
             FillDictionaryFromFile(); //vardina no sample
             FillTermsListFromFile(); //regularie vaicajumi
@@ -181,7 +138,7 @@ namespace Project2
 
                 List<string> postingsOr = QueryOr(query);
                 postingsOr.Sort();
-                List<string> bigramIndex = GetBigramIndex(termsMap, replacedTermsList);
+
 
                 //TF-IDF uzdevums queryand
                 List<KeyValuePair<string, double>> notSortedAnd = new List<KeyValuePair<string, double>>();
@@ -212,8 +169,18 @@ namespace Project2
                     WriteTFIDF(tw, query, sortedOr);
                 }
             }
-        }
+            int myint = 1;
+            foreach (string term in replacedTermsList)
+            {
 
+
+                List<KeyValuePair<string, List<string>>> bigramIndex = GetBigramIndex(term);
+
+                myint += 1;
+
+
+            }
+        }
 
         /// <summary>
         /// Fills Dictionary termsMap with content from given file
