@@ -42,7 +42,7 @@ namespace Project2
                 if (gram.Contains("*"))
                 {
 
-                    gram = gram.Replace("*", "");
+                   // gram = gram.Replace("*", "");
                 };
                 int gramStringLength = gram.Length;
                 if (gramStringLength != 0 && grams.IndexOf(gram) == -1)
@@ -56,7 +56,7 @@ namespace Project2
                 if (gram.Contains("*"))
                 {
 
-                    gram = gram.Replace("*", "");
+                    //gram = gram.Replace("*", "");
                 };
                 int gramStringLength = gram.Length;
                 if (gramStringLength != 0 && grams.IndexOf(gram) == -1)
@@ -69,7 +69,7 @@ namespace Project2
                 if (gram.Contains("*"))
                 {
 
-                    gram = gram.Replace("*", "");
+                    //gram = gram.Replace("*", "");
                 };
                 int gramStringLength = gram.Length;
                 if (gramStringLength != 0 && grams.IndexOf(gram) == -1)
@@ -89,18 +89,49 @@ namespace Project2
 
 
 
+            string gramer;
             foreach (string gram in grams)
             {
-
-                keys = keys.Where(x => x.Key.Contains(gram)).ToList();
-
-                keys = keys;
-                /*
-                if (termsMap.Where(x => x.Key.Contains(grams))
+                gramer = gram;
+                if (gram.Contains("*"))
                 {
-                    listOfPostings.Add(matches);
+
+                     gramer = gram.Replace("*", "");
+                };
+
+                if(gram == grams.Last())
+                {
+                    if (gram.Contains("*"))
+                    {
+                        if (gram.EndsWith("*"))
+                        {
+
+                            gramer = gram.Replace("*", "");
+                            keys = keys.Where(x => x.Key.Contains(gramer)).ToList();
+                        }
+                        if (!gram.EndsWith("*"))
+                        {
+                            gramer = gram.Replace("*", "");
+                            keys = keys.Where(x => x.Key.EndsWith(gramer)).ToList();
+
+                        }
+
+                    }
+                    if (gram == grams.First())
+                    {
+                        if (!gram.StartsWith("*"))
+                        {
+                            keys = keys.Where(x => x.Key.StartsWith(gramer)).ToList();
+                        }
+                    }
+
+
                 }
-                */
+
+                keys = keys.Where(x => x.Key.Contains(gramer)).ToList();
+
+                keys = keys; //debug purposes
+             
             }
 
 
@@ -373,13 +404,26 @@ namespace Project2
                     break;
                 }
             }
+            int docCountContainsTerm;
             int termCountInDoc = words.Where(x => x.Equals(term)).Count();
             int totalTermCountInDoc = words.Count();
             tf_score = (double)termCountInDoc / totalTermCountInDoc;
 
+            List<string> matches = new List<string>();
             int totalDocCount = File.ReadLines(firstFilePath).Count();
-            termsMap.TryGetValue(term, out List<string> matches);
-            int docCountContainsTerm = matches.Count();
+
+            
+            if( termsMap.TryGetValue(term, out matches))
+            {
+                docCountContainsTerm = matches.Count();
+            }
+
+
+           
+              
+           
+            else { docCountContainsTerm = 0; }
+            
             idf_score = (double)totalDocCount / docCountContainsTerm;
 
             tfidf_result = tf_score * idf_score;
