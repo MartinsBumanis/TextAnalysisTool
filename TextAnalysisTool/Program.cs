@@ -85,7 +85,7 @@ namespace Project2
 
 
 
-            List<KeyValuePair<string, List<string>>> keys = termsMap.Where(x => x.Key.Contains(grams[0])).ToList();
+            List<KeyValuePair<string, List<string>>> keys = termsMap.ToList();
 
 
 
@@ -93,12 +93,13 @@ namespace Project2
             foreach (string gram in grams)
             {
                 gramer = gram;
+                /*
                 if (gram.Contains("*"))
                 {
 
                      gramer = gram.Replace("*", "");
                 };
-
+                */
                 if(gram == grams.Last())
                 {
                     if (gram.Contains("*"))
@@ -107,7 +108,7 @@ namespace Project2
                         {
 
                             gramer = gram.Replace("*", "");
-                            keys = keys.Where(x => x.Key.Contains(gramer)).ToList();
+                            keys = keys.Where(x => x.Key.EndsWith(gramer)).ToList();
                         }
                         if (!gram.EndsWith("*"))
                         {
@@ -117,20 +118,81 @@ namespace Project2
                         }
 
                     }
-                    if (gram == grams.First())
+                    if (!gram.Contains("*"))
                     {
-                        if (!gram.StartsWith("*"))
-                        {
-                            keys = keys.Where(x => x.Key.StartsWith(gramer)).ToList();
-                        }
+
+                        keys = keys.Where(x => x.Key.EndsWith(gramer)).ToList();
                     }
 
 
+
                 }
+                if (gram == grams.First())
+                {
 
-                keys = keys.Where(x => x.Key.Contains(gramer)).ToList();
+                    if (gram.Contains("*"))
+                    {
+                        if (!gram.StartsWith("*"))
+                        {
+                            gramer = gram.Replace("*", "");
+                            keys = keys.Where(x => x.Key.StartsWith(gramer)).ToList();
+                        }
 
-                keys = keys; //debug purposes
+                        if (gram.StartsWith("*"))
+                        {
+                            if (gram == "*")
+                            {
+                                
+                              //do nothing if first character is *
+                            }
+                            else
+                            {
+
+
+                                gramer = gram.Replace("*", "");
+                                keys = keys.Where(x => x.Key.StartsWith(gramer)).ToList();
+                            }
+                        }
+                    }
+                    
+                    if (!gram.Contains("*"))
+                    {
+
+                        keys = keys.Where(x => x.Key.StartsWith(gramer)).ToList();
+
+                    }
+                    
+
+                }
+                else
+                {
+
+
+                    if (!gram.Contains("*"))
+                    {
+                        //gramer = gram.Replace("*", "");
+                        keys = keys.Where(x => x.Key.Contains(gramer)).ToList();
+                    }
+
+                    if (gram.Contains("*"))
+                    {
+                        gramer = gram.Replace("*", "");
+                        keys = keys.Where(x => x.Key.Contains(gramer)).ToList();
+                    }
+
+                    /*
+                    if (!gram.Contains("*"))
+                    {
+
+                        keys = keys.Where(x => x.Key.Contains(gramer)).ToList();
+
+                    }
+                    */
+                }
+                
+               // keys = keys.Where(x => x.Key.Contains(gramer)).ToList();
+
+               // keys = keys; //debug purposes
              
             }
 
