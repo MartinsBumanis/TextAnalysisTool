@@ -14,7 +14,7 @@ namespace Project2
         static List<List<string>> termsList = new List<List<string>>();
         static List<string> replacedTermsList = new List<string>();
         static string firstFilePath = @"C:\Users\Martins\source\repos\TextAnalysisTool\sample.txt";
-        static string queryFilePath = @"C:\Users\Martins\source\repos\TextAnalysisTool\regulquery.txt";
+        static string queryFilePath = @"C:\Users\Martins\source\repos\TextAnalysisTool\regulquery2.txt";
         static string queryListFilePath = @"C:\Users\Martins\source\repos\TextAnalysisTool\aizquery.txt";
         static string resultFilePath = @"C:\Users\Martins\source\repos\TextAnalysisTool\results.txt";
 
@@ -35,6 +35,7 @@ namespace Project2
             List<string> grams = new List<string>();
 
             int length = term.Length;
+            //sadala vārdu pa daļām 
 
             for (int i = 1; i <= gramLength - 1; i++)
             {
@@ -42,7 +43,7 @@ namespace Project2
                 if (gram.Contains("*"))
                 {
 
-                   // gram = gram.Replace("*", "");
+                    // gram = gram.Replace("*", "");
                 };
                 int gramStringLength = gram.Length;
                 if (gramStringLength != 0 && grams.IndexOf(gram) == -1)
@@ -75,7 +76,7 @@ namespace Project2
                 if (gramStringLength != 0 && grams.IndexOf(gram) == -1)
                     grams.Add(gram);
             }
-
+            // beidz sadalīt pa daļām
             List<string> bigramPostings = new List<string>();
 
 
@@ -88,7 +89,7 @@ namespace Project2
             List<KeyValuePair<string, List<string>>> keys = termsMap.ToList();
 
 
-
+            //šeit sākam meklēšanu
             string gramer;
             foreach (string gram in grams)
             {
@@ -100,7 +101,7 @@ namespace Project2
                      gramer = gram.Replace("*", "");
                 };
                 */
-                if(gram == grams.Last())
+                if (gram == grams.Last())
                 {
                     if (gram.Contains("*"))
                     {
@@ -142,26 +143,25 @@ namespace Project2
                         {
                             if (gram == "*")
                             {
-                                
-                              //do nothing if first character is *
+
+                                //do nothing if first character is *
                             }
                             else
                             {
-
 
                                 gramer = gram.Replace("*", "");
                                 keys = keys.Where(x => x.Key.StartsWith(gramer)).ToList();
                             }
                         }
                     }
-                    
+
                     if (!gram.Contains("*"))
                     {
 
                         keys = keys.Where(x => x.Key.StartsWith(gramer)).ToList();
 
                     }
-                    
+
 
                 }
                 else
@@ -189,17 +189,17 @@ namespace Project2
                     }
                     */
                 }
-                
-               // keys = keys.Where(x => x.Key.Contains(gramer)).ToList();
 
-               // keys = keys; //debug purposes
-             
+                // keys = keys.Where(x => x.Key.Contains(gramer)).ToList();
+
+                // keys = keys; //debug purposes
+
             }
 
 
             return keys;
-        
-           
+
+
         }
 
 
@@ -262,14 +262,21 @@ namespace Project2
                     WriteTFIDF(tw, query, sortedOr);
                 }
             }
-            int myint = 1;
+            // int myint = 1;
             foreach (string term in replacedTermsList)
             {
 
 
-                List<KeyValuePair<string, List<string>>> bigramIndex = GetBigramIndex(term);
+                List<KeyValuePair<string, List<string>>> bigramPostings = GetBigramIndex(term);
 
-                myint += 1;
+                using (TextWriter tw = File.AppendText(resultFilePath))
+                {
+                    WriteBigram(tw, term, bigramPostings);
+
+                };
+
+
+                //myint += 1;
 
 
             }
@@ -474,18 +481,18 @@ namespace Project2
             List<string> matches = new List<string>();
             int totalDocCount = File.ReadLines(firstFilePath).Count();
 
-            
-            if( termsMap.TryGetValue(term, out matches))
+
+            if (termsMap.TryGetValue(term, out matches))
             {
                 docCountContainsTerm = matches.Count();
             }
 
 
-           
-              
-           
+
+
+
             else { docCountContainsTerm = 0; }
-            
+
             idf_score = (double)totalDocCount / docCountContainsTerm;
 
             tfidf_result = tf_score * idf_score;
@@ -523,7 +530,7 @@ namespace Project2
             // 4. solis
         }
 
-       
+
 
         /// <summary>
         /// Reads all file paths
@@ -531,7 +538,7 @@ namespace Project2
         static void GetFilePaths()
         {
             // Dokumenta fails
-          
+
             Console.WriteLine("Ievadiet faila path, kas satur dokumentu id un teikumus: ");
             //firstFilePath = Console.ReadLine();
             while (!File.Exists(firstFilePath))
@@ -541,9 +548,9 @@ namespace Project2
             }
 
             // Vaicajumu fails
-           
+
             Console.WriteLine("Ievadiet faila path, kas satur vaicajumus: ");
-           // queryFilePath = Console.ReadLine();
+            // queryFilePath = Console.ReadLine();
             while (!File.Exists(queryFilePath))
             {
                 Console.WriteLine("Fails neeksiste, ievadiet pareizu path: ");
@@ -552,7 +559,7 @@ namespace Project2
 
             // Aizstajejvaicajumi
             Console.WriteLine("Ievadiet faila path, kas satur aizstajejvaicajumus: ");
-           // queryListFilePath = Console.ReadLine();
+            // queryListFilePath = Console.ReadLine();
             while (!File.Exists(queryListFilePath))
             {
                 Console.WriteLine("Fails neeksiste, ievadiet pareizu path: ");
@@ -560,7 +567,7 @@ namespace Project2
             }
 
             // Rezultata fails
-       
+
             Console.WriteLine("Ievadiet faila path, kur izvadit rezultatus: ");
             //resultFilePath = Console.ReadLine();
 
@@ -568,7 +575,7 @@ namespace Project2
         }
 
 
-        
+
         /// <summary>
         /// Failaa izvada GetPostings
         /// </summary>
@@ -641,22 +648,42 @@ namespace Project2
             tw.WriteLine();
         }
 
-        static void WriteBigram(TextWriter tw, List<string> query, List<string> postings)
+        static void WriteBigram(TextWriter tw, string query, List<KeyValuePair<string, List<string>>> postings)
         {
-            tw.WriteLine("\nQueryOr"); //method printed
-            foreach (string t in query)
-            {
-                tw.Write($"{t} "); //given terms printed
-            }
-            tw.Write("\nResults: ");
+            tw.WriteLine("\nWildCard"); //method printed
+
+            tw.Write($"{query}"); //given terms printed
+
+           
             if (postings.Any())
             {
-                foreach (string p in postings)
+                foreach (string p in postings.Select(x => x.Key))
                 {
 
+                    tw.Write("\nResults: ");
+
+                    tw.Write($"{p} ");
+                    tw.Write("\nPostings: ");
+
+                    
+                    foreach (List<string> a in postings.Where(x => x.Key == p)
+                    .Select(x => x.Value))
+                    {
+                        
+                        foreach(string finalPosting in a)
+                        tw.Write($"{finalPosting} ");
+                    }
+
+                }
+                /*
+                tw.Write("\nPostings: ");
+               foreach (string p in postings.Select(x => x.Value).ToList()) { 
+               
                     tw.Write($"{p} ");
                 }
+                */
             }
+
             else
             {
                 tw.Write("empty"); //ja nav rezultāti
