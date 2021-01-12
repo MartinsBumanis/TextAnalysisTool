@@ -94,26 +94,61 @@ namespace Project2
                         if (gramStringLength != 0 && grams.IndexOf(gram) == -1)
                             grams.Add(gram);
                     }
-                }
-              
-                /*
-                int chunkSize = 2;
-                int stringLength = term.Length;
-                for (int i = 0; i < stringLength; i += chunkSize)
-                {
-                    if (i + chunkSize > stringLength) chunkSize = stringLength - i;
-                    //Console.WriteLine(term.Substring(i, chunkSize));
-                    spliced.Add(term.Substring(i, chunkSize));
+
+                    List<string> bigramPostings = new List<string>();
+
+                 
+                    
+
+                    List<List<string>> listOfPostings = new List<List<string>>();
+
+
+
+                    var keys = termsMap.Where(x => x.Key.Contains(grams[0])).ToList();
+                   
+
+
+                    foreach (string gram in grams)
+                    {
+
+                        keys = keys.Where(x => x.Key.Contains(gram)).ToList();
+                        
+                        keys = keys;
+                        /*
+                        if (termsMap.Where(x => x.Key.Contains(grams))
+                        {
+                            listOfPostings.Add(matches);
+                        }
+                        */
+                    }
+                   
+                     
+
 
                 }
+                
 
-                */
+            }
 
-                if (termsMap.TryGetValue(term, out List<string> matches))
+            /*
+            int chunkSize = 2;
+            int stringLength = term.Length;
+            for (int i = 0; i < stringLength; i += chunkSize)
+            {
+                if (i + chunkSize > stringLength) chunkSize = stringLength - i;
+                //Console.WriteLine(term.Substring(i, chunkSize));
+                spliced.Add(term.Substring(i, chunkSize));
+
+            }
+
+            */
+            /*
+            if (termsMap.TryGetValue(term, out List<string> matches))
                 {
                     postings.Add(string.Join(" ", matches));
                 }
             }
+            */
             return postings;
             
         }
@@ -511,6 +546,29 @@ namespace Project2
         /// <param name="query"></param>
         /// <param name="postings"></param>
         static void WriteOr(TextWriter tw, List<string> query, List<string> postings)
+        {
+            tw.WriteLine("\nQueryOr"); //method printed
+            foreach (string t in query)
+            {
+                tw.Write($"{t} "); //given terms printed
+            }
+            tw.Write("\nResults: ");
+            if (postings.Any())
+            {
+                foreach (string p in postings)
+                {
+
+                    tw.Write($"{p} ");
+                }
+            }
+            else
+            {
+                tw.Write("empty"); //ja nav rezultāti
+            }
+            tw.WriteLine();
+        }
+
+        static void WriteBigram(TextWriter tw, List<string> query, List<string> postings)
         {
             tw.WriteLine("\nQueryOr"); //method printed
             foreach (string t in query)
