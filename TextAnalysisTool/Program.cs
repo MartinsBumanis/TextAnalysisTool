@@ -11,11 +11,100 @@ namespace Project2
     {
         static Dictionary<string, List<string>> termsMap = new Dictionary<string, List<string>>();
         static List<List<string>> termsList = new List<List<string>>();
+        static List<string> replacedTermsList = new List<string>();
         static string firstFilePath = @"C:\Users\Martins\source\repos\TextAnalysisTool\sample.txt";
         static string queryFilePath = @"C:\Users\Martins\source\repos\TextAnalysisTool\regulquery.txt";
         static string queryListFilePath = @"C:\Users\Martins\source\repos\TextAnalysisTool\aizquery.txt";
         static string resultFilePath = @"C:\Users\Martins\source\repos\TextAnalysisTool\results.txt";
 
+
+
+        static List<string> GetBigramIndex(Dictionary<string, List<string>> termsMap, List<string> replacedTermsList)
+        {
+            
+            List<string> postings = new List<string>();
+            List<string> spliced = new List<string>();
+            foreach (string term in replacedTermsList)
+            {
+                int chunkSize = 2;
+                int stringLength = term.Length;
+                for (int i = 0; i < stringLength; i += chunkSize)
+                {
+                    if (i + chunkSize > stringLength) chunkSize = stringLength - i;
+                    //Console.WriteLine(term.Substring(i, chunkSize));
+                    spliced.Add(term.Substring(i, chunkSize));
+
+                }
+
+                if (termsMap.TryGetValue(term, out List<string> matches))
+                {
+                    postings.Add(string.Join(" ", matches));
+                }
+            }
+            return postings;
+            
+        }
+        
+
+        /// <summary>
+        /// Main method
+        /// </summary>
+        public static void Main()
+        {
+            // lai mazaak vietu aiznem mainaa, ieliku atseviski visu failu nosaukumu vadisanu
+            // https://www.dotnetperls.com/inverted-index
+            GetFilePaths();
+            
+            //Datu lasīšana no failiem
+            FillDictionaryFromFile(); //vardina no sample
+            FillTermsListFromFile(); //regularie vaicajumi
+            FillReplaceTermsListFromFile(); //aizstajej vaicajumi
+
+            foreach (List<string> query in termsList) //query ir iedotie query, kas var saturēt vairākus terminus, viens cikls vienam query
+            {
+
+                //Get postings, 1. uzdevums
+                List<string> postingsGet = GetPostings(query);
+                postingsGet.Sort();
+
+                //Getquery and or 2.uzd
+                List<string> postingsAnd = QueryAnd(query);
+                postingsAnd.Sort();
+
+                List<string> postingsOr = QueryOr(query);
+                postingsOr.Sort();
+                List<string> bigramIndex = GetBigramIndex(termsMap, replacedTermsList);
+
+                //TF-IDF uzdevums queryand
+                List<KeyValuePair<string, double>> notSortedAnd = new List<KeyValuePair<string, double>>();
+                foreach (string doc in QueryAnd(query))
+                {
+                    double docScore = GetDocScore(query, doc);
+                    notSortedAnd.Add(new KeyValuePair<string, double>(doc, docScore));
+                }
+                List<KeyValuePair<string, double>> sortedAnd = notSortedAnd.OrderByDescending(x => x.Value).ToList();
+
+                //TF-IDF uzdevums queryor
+                List<KeyValuePair<string, double>> notSortedOr = new List<KeyValuePair<string, double>>(); //tukšs lists
+                foreach (string doc in QueryOr(query))
+                {
+                    double docScore = GetDocScore(query, doc); //tf-idf for katram dokumentam
+                    notSortedOr.Add(new KeyValuePair<string, double>(doc, docScore));
+                }
+                List<KeyValuePair<string, double>> sortedOr = notSortedOr.OrderByDescending(x => x.Value).ToList();
+
+
+                // ieraksta failaa
+                using (TextWriter tw = File.AppendText(resultFilePath))
+                {
+                    WritePostings(tw, query, postingsGet);
+                    WriteAnd(tw, query, postingsAnd);
+                    WriteTFIDF(tw, query, sortedAnd);
+                    WriteOr(tw, query, postingsOr);
+                    WriteTFIDF(tw, query, sortedOr);
+                }
+            }
+        }
 
 
         /// <summary>
@@ -24,6 +113,7 @@ namespace Project2
         /// <param name="filePath"></param>
         static void FillDictionaryFromFile()
         {
+            // https://www.dotnetperls.com/inverted-index
             // Map each term to a list of pages.
             //termsMap = new Dictionary<string, List<string>>();
             foreach (string line in File.ReadLines(firstFilePath))
@@ -91,16 +181,29 @@ namespace Project2
         {
             foreach (string line in File.ReadLines(queryFilePath))
             {
-                termsList.Add(line.Split(' ').ToList());
+                termsList.Add(line.Split(' ').ToList()); //term to list, spereator is a space
             }
         }
 
+        /// <summary>
+        /// Aizstajej vaicajumi
+        /// </summary>
+        static void FillReplaceTermsListFromFile()
+        {
+            foreach (string line in File.ReadLines(queryListFilePath))
+            {
+                replacedTermsList.Add(line); //term to list, spereator is a space
+            }
+        }
+
+        /*
         static List<string> Get(string search)
         {
             // Get all matching pages from a term.
             termsMap.TryGetValue(search, out List<string> matches);
             return matches;
         }
+        */
 
         /// <summary>
         /// Gets all postings for each term
@@ -239,57 +342,7 @@ namespace Project2
             // 4. solis
         }
 
-        public static void Main()
-        {
-            // lai mazaak vietu aiznem mainaa, ieliku atseviski visu failu nosaukumu vadisanu
-            GetFilePaths();
-            FillDictionaryFromFile();
-            FillTermsListFromFile();
-
-            foreach (List<string> query in termsList)
-            {
-
-                //Results get
-                List<string> postingsGet = GetPostings(query);
-                postingsGet.Sort();
-
-                List<string> postingsAnd = QueryAnd(query);
-                postingsAnd.Sort();
-
-                List<string> postingsOr = QueryOr(query);
-                postingsOr.Sort();
-
-
-                //TF-IDF uzdevums queryand
-                List<KeyValuePair<string, double>> notSortedAnd = new List<KeyValuePair<string, double>>();
-                foreach (string doc in QueryAnd(query))
-                {
-                    double docScore = GetDocScore(query, doc);
-                    notSortedAnd.Add(new KeyValuePair<string, double>(doc, docScore));
-                }
-                List<KeyValuePair<string, double>> sortedAnd = notSortedAnd.OrderByDescending(x => x.Value).ToList();
-
-                //TF-IDF uzdevums queryor
-                List<KeyValuePair<string, double>> notSortedOr = new List<KeyValuePair<string, double>>(); //tukšs lists
-                foreach (string doc in QueryOr(query))
-                {
-                    double docScore = GetDocScore(query, doc); //tf-idf for katram dokumentam
-                    notSortedOr.Add(new KeyValuePair<string, double>(doc, docScore));
-                }
-                List<KeyValuePair<string, double>> sortedOr = notSortedOr.OrderByDescending(x => x.Value).ToList();
-
-
-                // ieraksta failaa
-                using (TextWriter tw = File.AppendText(resultFilePath))
-                {
-                    WritePostings(tw, query, postingsGet);
-                    WriteAnd(tw, query, postingsAnd);
-                    WriteTFIDF(tw, query, sortedAnd);
-                    WriteOr(tw, query, postingsOr);
-                    WriteTFIDF(tw, query, sortedOr);
-                }
-            }
-        }
+       
 
         /// <summary>
         /// Reads all file paths
@@ -333,6 +386,8 @@ namespace Project2
 
         }
 
+
+        
         /// <summary>
         /// Failaa izvada GetPostings
         /// </summary>
@@ -355,10 +410,10 @@ namespace Project2
         /// <param name="postings"></param>
         static void WriteAnd(TextWriter tw, List<string> query, List<string> postings)
         {
-            tw.WriteLine("\nQueryAnd");
+            tw.WriteLine("\nQueryAnd"); //method
             foreach (string t in query)
             {
-                tw.Write($"{t} ");
+                tw.Write($"{t} "); //given terms printed
             }
             tw.Write("\nResults: ");
             if (postings.Any())
@@ -371,7 +426,7 @@ namespace Project2
             }
             else
             {
-                tw.Write("empty");
+                tw.Write("empty"); //ja nav rezultāti
             }
             tw.WriteLine();
         }
@@ -384,10 +439,10 @@ namespace Project2
         /// <param name="postings"></param>
         static void WriteOr(TextWriter tw, List<string> query, List<string> postings)
         {
-            tw.WriteLine("\nQueryOr");
+            tw.WriteLine("\nQueryOr"); //method printed
             foreach (string t in query)
             {
-                tw.Write($"{t} ");
+                tw.Write($"{t} "); //given terms printed
             }
             tw.Write("\nResults: ");
             if (postings.Any())
@@ -400,7 +455,7 @@ namespace Project2
             }
             else
             {
-                tw.Write("empty");
+                tw.Write("empty"); //ja nav rezultāti
             }
             tw.WriteLine();
         }
@@ -416,7 +471,7 @@ namespace Project2
             tw.WriteLine("\nTF-IDF");
             foreach (string t in query)
             {
-                tw.Write($"{t} ");
+                tw.Write($"{t} "); //given terms posted
             }
             tw.Write("\nResults: ");
             if (sortedResults.Any())
